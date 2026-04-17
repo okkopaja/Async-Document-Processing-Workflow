@@ -1,0 +1,136 @@
+services:
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ../caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+      web:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/web.prod.Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: https://project.hiderview.app
+        NEXT_PUBLIC_WS_BASE_URL: wss://project.hiderview.app
+    env_file:
+      - ../../.env.prod
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: https://project.hiderview.app
+      NEXT_PUBLIC_WS_BASE_URL: wss://project.hiderview.app
+    expose:
+      - "3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  migrate:
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    env_file:
+      - ../../.env.prod
+    command: uv run alembic upgrade head
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    env_file:
+      - ../../.env.prod
+    environment:
+      APP_ENV: production
+      CORS_ORIGINS: https://project.hiderview.app
+    expose:
+      - "8000"
+    volumes:
+      - uploads_data:/workspace/data/uploads
+    command: uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health', timeout=3)\""]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infra/docker/worker.Dockerfile
+    env_file:
+      - ../../.env.prod
+    environment:
+      APP_ENV: production
+      HOME: /tmp
+      XDG_CACHE_HOME: /tmp/.cache
+      UV_CACHE_DIR: /tmp/.cache/uv
+    user: "65534:65534"
+    volumes:
+      - uploads_data:/workspace/data/uploads
+    command: uv run celery -A app.core.celery_app.celery_app worker --loglevel=info
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-docflow}
+      POSTGRES_USER: ${POSTGRES_USER:-app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-app}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-app} -d ${POSTGRES_DB:-docflow}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  caddy_data:
+  caddy_config:
+  postgres_data:
+  redis_data:
+  uploads_data:
