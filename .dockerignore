@@ -1,0 +1,31 @@
+# Git and editor metadata
+.git
+.gitignore
+
+# Python artifacts
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Node artifacts
+**/node_modules/
+apps/web/.next/
+
+# Build and cache output
+**/.turbo/
+**/dist/
+**/build/
+
+# Runtime and local state
+data/uploads/
+*.log
+
+# Documentation and local notes not needed in container build context
+docs/
+design docs/
+sample-files/
+sample-exports/
+memories/

@@ -1,0 +1,63 @@
+
+> web@0.1.0 lint E:\Async-Document-Processing-Workflow\apps\web
+> eslint
+
+
+E:\Async-Document-Processing-Workflow\apps\web\app\documents\[documentId]\page.tsx
+  185:31  warning  'idx' is defined but never used           @typescript-eslint/no-unused-vars
+  244:13  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  245:11  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\Async-Document-Processing-Workflow\apps\web\app\page.tsx
+  5:26  warning  'JobStage' is defined but never used             @typescript-eslint/no-unused-vars
+  5:36  warning  'ProgressEvent' is defined but never used        @typescript-eslint/no-unused-vars
+  7:10  warning  'useDocumentProgress' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\Async-Document-Processing-Workflow\apps\web\components\documents\ActionBar.tsx
+  13:69  warning  'onRetrySuccess' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\Async-Document-Processing-Workflow\apps\web\components\forms\UploadForm.tsx
+    5:10  warning  'apiRequest' is defined but never used     @typescript-eslint/no-unused-vars
+  159:13  warning  'data' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\Async-Document-Processing-Workflow\apps\web\hooks\useDocumentProgress.ts
+   1:10  warning  'useCallback' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+  31:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\Async-Document-Processing-Workflow\apps\web\hooks\useDocumentProgress.ts:31:7
+  29 |   useEffect(() => {
+  30 |     if (!documentId) {
+> 31 |       setState({
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  32 |         events: [],
+  33 |         latestEvent: null,
+  34 |         isConnected: false,  react-hooks/set-state-in-effect
+
+E:\Async-Document-Processing-Workflow\apps\web\hooks\useJobProgress.ts
+   1:10  warning  'useCallback' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  31:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+E:\Async-Document-Processing-Workflow\apps\web\hooks\useJobProgress.ts:31:7
+  29 |   useEffect(() => {
+  30 |     if (!jobId) {
+> 31 |       setState({
+     |       ^^^^^^^^ Avoid calling setState() directly within an effect
+  32 |         events: [],
+  33 |         latestEvent: null,
+  34 |         isConnected: false,  react-hooks/set-state-in-effect
+
+✖ 13 problems (4 errors, 9 warnings)
+
+ ELIFECYCLE  Command failed with exit code 1.

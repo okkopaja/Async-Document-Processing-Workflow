@@ -1,0 +1,105 @@
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/web.Dockerfile
+    env_file:
+      - ../../.env.example
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../../apps/web:/workspace/apps/web
+      - ../../packages:/workspace/packages
+      - ../../package.json:/workspace/package.json
+      - ../../pnpm-lock.yaml:/workspace/pnpm-lock.yaml
+      - ../../pnpm-workspace.yaml:/workspace/pnpm-workspace.yaml
+      - ../../turbo.json:/workspace/turbo.json
+      - web_workspace_node_modules:/workspace/node_modules
+      - web_app_node_modules:/workspace/apps/web/node_modules
+      - web_pnpm_store:/pnpm/store
+    command: sh -c "pnpm install --frozen-lockfile && pnpm dev --hostname 0.0.0.0 --port 3000"
+    depends_on:
+      api:
+        condition: service_started
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infra/docker/api.Dockerfile
+    env_file:
+      - ../../.env.example
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../../apps/api:/workspace/apps/api
+      - ../../data/uploads:/workspace/data/uploads
+    command: sh -c "uv run alembic upgrade head && uv run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir app --reload-exclude '.venv/*' --reload-exclude '.venv/**'"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infra/docker/worker.Dockerfile
+    env_file:
+      - ../../.env.example
+    environment:
+      HOME: /tmp
+      XDG_CACHE_HOME: /tmp/.cache
+      UV_CACHE_DIR: /tmp/.cache/uv
+    user: "65534:65534"
+    volumes:
+      - ../../apps/api:/workspace/apps/api
+      - ../../data/uploads:/workspace/data/uploads
+    command: uv run celery -A app.core.celery_app.celery_app worker --loglevel=info
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: docflow
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d docflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  flower:
+    image: mher/flower:2.0.1
+    env_file:
+      - ../../.env.example
+    command: celery --broker=redis://redis:6379/0 flower --port=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  web_workspace_node_modules:
+  web_app_node_modules:
+  web_pnpm_store:

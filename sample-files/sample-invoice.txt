@@ -1,0 +1,5 @@
+Invoice #INV-2026-001
+Date: 2026-04-15
+Vendor: Acme Supplies Ltd.
+Total: 1245.90 USD
+Status: Awaiting approval

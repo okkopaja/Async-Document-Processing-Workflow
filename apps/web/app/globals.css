@@ -1,0 +1,63 @@
+:root {
+  --bg: #f6f8fa;
+  --surface: #ffffff;
+  --text: #111827;
+  --muted: #4b5563;
+  --border: #d1d5db;
+  --primary: #0f766e;
+  --primary-contrast: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-geist-sans), sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top right, #dbeafe, transparent 40%), var(--bg);
+}
+
+.page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.page h1 {
+  margin-top: 0;
+  font-size: 2rem;
+}
+
+.page p {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.actions {
+  margin-top: 1rem;
+}
+
+.button {
+  display: inline-block;
+  border: 1px solid var(--primary);
+  border-radius: 0.5rem;
+  padding: 0.625rem 1rem;
+  color: var(--primary-contrast);
+  background: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.button.secondary {
+  color: var(--primary);
+  background: transparent;
+}
+
+.card {
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+  padding: 1rem;
+}

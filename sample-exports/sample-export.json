@@ -1,0 +1,32 @@
+{
+  "documentId": "550e8400-e29b-41d4-a716-446655440000",
+  "filename": "sample-invoice.txt",
+  "title": "Invoice #2026-001",
+  "category": "finance",
+  "summary": "Monthly invoice for services rendered in April 2026. Total amount due: $5,000.00. Due date: May 15, 2026.",
+  "keywords": [
+    "invoice",
+    "payment",
+    "finance",
+    "april",
+    "services"
+  ],
+  "status": "FINALIZED",
+  "finalizedAt": "2026-04-15T14:30:00+00:00",
+  "structuredJson": {
+    "invoiceNumber": "2026-001",
+    "date": "2026-04-15",
+    "dueDate": "2026-05-15",
+    "amount": 5000.00,
+    "currency": "USD",
+    "vendor": "Service Company Inc.",
+    "items": [
+      {
+        "description": "Consulting Services",
+        "quantity": 1,
+        "rate": 5000.00,
+        "total": 5000.00
+      }
+    ]
+  }
+}
