@@ -64,6 +64,42 @@ Restart with rebuild:
 docker compose -f infra/compose/docker-compose.prod.yml --env-file .env.prod up -d --build
 ```
 
+## 6. Automatic Deploy On Push To `main` (GitHub Actions)
+
+This repository includes `.github/workflows/deploy-ec2.yml`.
+
+On every push to `main`, GitHub Actions SSHes into EC2 and runs:
+
+```bash
+bash infra/scripts/deploy-prod.sh <commit-sha>
+```
+
+The deploy script does:
+
+- `git fetch` + `git pull --ff-only` on `main`
+- production preflight validation
+- `docker compose ... up -d --build --remove-orphans`
+
+### One-time EC2 prep
+
+From the EC2 host (inside repo root):
+
+```bash
+chmod +x infra/scripts/deploy-prod.sh infra/scripts/preflight-prod.sh
+```
+
+### Required GitHub repository secrets
+
+- `EC2_HOST` (public IP or DNS of the instance)
+- `EC2_USER` (for example `ubuntu`)
+- `EC2_SSH_KEY` (private key content for the deploy user)
+
+### Optional GitHub repository secrets
+
+- `EC2_PORT` (defaults to `22`)
+- `EC2_APP_DIR` (defaults to `/home/ubuntu/Async-Document-Processing-Workflow`)
+- `EC2_KNOWN_HOSTS` (recommended, output of `ssh-keyscan -H <host>`)
+
 ## Notes
 
 - Only Caddy is exposed publicly (`80/443`).

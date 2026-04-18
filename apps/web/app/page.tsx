@@ -45,6 +45,7 @@ export default function DashboardPage() {
 	useEffect(() => {
 		let isMounted = true;
 		let isRequestInFlight = false;
+		let hasCompletedInitialFetch = false;
 		let pollTimer: ReturnType<typeof setTimeout> | null = null;
 		let activeController: AbortController | null = null;
 
@@ -57,7 +58,8 @@ export default function DashboardPage() {
 			activeController = new AbortController();
 
 			try {
-				if (isMounted) {
+				// Show full-page loading state only for the first fetch.
+				if (isMounted && !hasCompletedInitialFetch) {
 					setLoading(true);
 				}
 				const response = await fetch(getApiUrl('/api/documents?page=1&page_size=50'), {
@@ -84,8 +86,9 @@ export default function DashboardPage() {
 			} finally {
 				isRequestInFlight = false;
 				activeController = null;
-				if (isMounted) {
+				if (isMounted && !hasCompletedInitialFetch) {
 					setLoading(false);
+					hasCompletedInitialFetch = true;
 				}
 
 				if (isMounted) {

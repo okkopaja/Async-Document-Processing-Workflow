@@ -13,10 +13,11 @@ RUN apt-get update \
 RUN pip install --no-cache-dir uv
 
 COPY apps/api/pyproject.toml /workspace/apps/api/pyproject.toml
+COPY apps/api/uv.lock /workspace/apps/api/uv.lock
 COPY apps/api/README.md /workspace/apps/api/README.md
 
-RUN uv sync --no-dev
+RUN uv sync --no-dev --frozen
 
 COPY apps/api /workspace/apps/api
 
-CMD ["uv", "run", "celery", "-A", "app.core.celery_app.celery_app", "worker", "--loglevel=info"]
+CMD ["/workspace/apps/api/.venv/bin/celery", "-A", "app.core.celery_app.celery_app", "worker", "--loglevel=info"]
